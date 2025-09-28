@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Расписание МГУ — SPA</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --accent: #1d4ed8;
+            --accent-dark: #1e3a8a;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #d8dee9;
+            --text: #0f172a;
+            --muted: #64748b;
+            --muted-bg: #e2e8f0;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        header {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: #fff;
+            padding: 1.75rem 1rem;
+            text-align: center;
+        }
+        main {
+            padding: 1.75rem 1rem 4rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin: 0 0 0.65rem;
+            font-size: clamp(1.75rem, 2.5vw + 1.25rem, 2.75rem);
+        }
+        p.lead {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.05rem;
+        }
+        .panel {
+            background: var(--card);
+            border-radius: 18px;
+            box-shadow: 0 22px 55px -30px rgba(15, 23, 42, 0.4);
+            padding: 1.75rem;
+        }
+        .filters {
+            display: grid;
+            gap: 1.15rem;
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+        select,
+        input[type="date"],
+        button {
+            border-radius: 10px;
+            border: 1px solid #d0d5dd;
+            padding: 0.7rem 0.8rem;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            font-family: inherit;
+        }
+        select:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.16);
+        }
+        button.primary {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        button.primary:hover:not(:disabled) {
+            background: var(--accent-dark);
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+        .actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .status {
+            margin-top: 1rem;
+            min-height: 1.5rem;
+            color: var(--muted);
+        }
+        .schedule-wrapper {
+            margin-top: 2rem;
+        }
+        .schedule-days {
+            display: grid;
+            gap: 2rem;
+        }
+        .schedule-days.hidden {
+            display: none;
+        }
+        .day-block {
+            background: var(--card);
+            border-radius: 18px;
+            padding: 1.2rem 1.5rem 1.5rem;
+            box-shadow: 0 20px 50px -32px rgba(15, 23, 42, 0.45);
+        }
+        .day-header {
+            margin-bottom: 1.2rem;
+        }
+        .day-header h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+        .pair-list {
+            display: grid;
+            gap: 1rem;
+        }
+        .pair-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1rem 1.15rem;
+            background: var(--card);
+            display: grid;
+            gap: 0.55rem;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .pair-card:not(.empty):hover {
+            transform: translateY(-4px);
+            border-color: rgba(29, 78, 216, 0.35);
+        }
+        .pair-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        .pair-number {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+        .pair-time {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        .pair-lessons {
+            display: grid;
+            gap: 0.75rem;
+        }
+        .lesson-detail {
+            display: grid;
+            gap: 0.35rem;
+        }
+        .lesson-subject {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .lesson-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem 0.75rem;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+        .lesson-notes {
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .pair-card.empty {
+            background: var(--muted-bg);
+            border-style: dashed;
+            color: var(--muted);
+        }
+        .pair-card.empty .pair-number {
+            color: var(--muted);
+        }
+        .empty-text {
+            font-style: italic;
+            color: var(--muted);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            background: rgba(29, 78, 216, 0.12);
+            color: var(--accent-dark);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .load-more-wrapper {
+            margin: 2.5rem 0 4rem;
+            display: flex;
+            justify-content: center;
+        }
+        .load-more {
+            padding: 0.85rem 1.85rem;
+            border-radius: 999px;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 24px 38px -28px rgba(29, 78, 216, 0.8);
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        .load-more.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .load-more.hidden {
+            display: none;
+        }
+        .load-more:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .load-more:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 28px 42px -30px rgba(29, 78, 216, 0.85);
+        }
+        @media (min-width: 860px) {
+            .filters {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+            .field.dates {
+                grid-column: span 2;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1rem;
+            }
+            .actions {
+                grid-column: span 4;
+                justify-content: flex-end;
+            }
+        }
+        @media (max-width: 659px) {
+            .panel {
+                padding: 1.25rem;
+            }
+            .day-block {
+                padding: 1rem 1.1rem 1.2rem;
+            }
+            .pair-card {
+                padding: 0.85rem 0.95rem;
+            }
+            .pair-number {
+                font-size: 1rem;
+            }
+            .lesson-subject {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Расписание МГУ</h1>
+        <p class="lead">Факультет Государственного Управления</p>
+    </header>
+    <main>
+        <section class="panel">
+            <div class="filters">
+                <div class="field">
+                    <label for="faculty">Факультет</label>
+                    <select id="faculty" aria-label="Выбор факультета">
+                        <option value="">Выберите факультет</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="course">Курс</label>
+                    <select id="course" aria-label="Выбор курса" disabled>
+                        <option value="">Сначала выберите факультет</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="group">Группа</label>
+                    <select id="group" aria-label="Выбор группы" disabled>
+                        <option value="">Сначала выберите курс</option>
+                    </select>
+                </div>
+                <div class="field dates">
+                    <div>
+                        <label for="from">Дата с</label>
+                        <input id="from" type="date">
+                    </div>
+                    <div>
+                        <label for="to">Дата по</label>
+                        <input id="to" type="date">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="load" type="button" class="primary" disabled>Показать расписание</button>
+                </div>
+            </div>
+            <div id="status" class="status" role="status"></div>
+        </section>
+
+        <section class="schedule-wrapper">
+            <div id="schedule-days" class="schedule-days hidden" aria-live="polite"></div>
+        </section>
+        <div class="load-more-wrapper">
+            <button id="load-more" type="button" class="load-more hidden">Показать следующую неделю</button>
+        </div>
+    </main>
+
+    <script>
+        const facultySelect = document.querySelector('#faculty');
+        const courseSelect = document.querySelector('#course');
+        const groupSelect = document.querySelector('#group');
+        const loadButton = document.querySelector('#load');
+        const statusBox = document.querySelector('#status');
+        const scheduleDays = document.querySelector('#schedule-days');
+        const loadMoreButton = document.querySelector('#load-more');
+        const fromInput = document.querySelector('#from');
+        const toInput = document.querySelector('#to');
+
+        const API = {
+            faculties: '/api/options/faculties',
+            courses: faculty => `/api/options/courses?faculty=${encodeURIComponent(faculty)}`,
+            groups: (faculty, course) => `/api/options/groups?faculty=${encodeURIComponent(faculty)}&course=${encodeURIComponent(course)}`,
+            schedule: params => `/api/schedule?${new URLSearchParams(params).toString()}`,
+        };
+
+        const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+        const WEEKDAYS = ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
+
+        let aggregatedLessons = [];
+        let currentSelection = { faculty: '', course: '', group: '' };
+        let currentRange = { from: '', to: '' };
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                loadMoreButton.classList.toggle('visible', entry.isIntersecting);
+            });
+        }, { threshold: 0.1 });
+        observer.observe(loadMoreButton);
+
+        initializeDefaultDates();
+        loadFaculties();
+
+        facultySelect.addEventListener('change', event => {
+            const faculty = event.target.value;
+            clearSchedule();
+            loadCourses(faculty);
+        });
+
+        courseSelect.addEventListener('change', event => {
+            const course = event.target.value;
+            const faculty = facultySelect.value;
+            clearSchedule();
+            loadGroups(faculty, course);
+        });
+
+        groupSelect.addEventListener('change', event => {
+            loadButton.disabled = !event.target.value;
+            clearSchedule();
+        });
+
+        loadButton.addEventListener('click', () => {
+            loadSchedule();
+        });
+
+        loadMoreButton.addEventListener('click', () => {
+            loadNextWeek();
+        });
+
+        async function fetchJson(url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || `Ошибка ${response.status}`);
+            }
+            return response.json();
+        }
+
+        function setStatus(message, isError = false) {
+            statusBox.textContent = message || '';
+            statusBox.style.color = isError ? '#b91c1c' : 'var(--muted)';
+        }
+
+        function resetSelect(select, placeholder, disabled = true) {
+            select.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = placeholder;
+            select.appendChild(option);
+            select.disabled = disabled;
+        }
+
+        function clearSchedule() {
+            aggregatedLessons = [];
+            scheduleDays.innerHTML = '';
+            scheduleDays.classList.add('hidden');
+            loadMoreButton.classList.add('hidden');
+            loadMoreButton.classList.remove('visible');
+            loadMoreButton.disabled = false;
+        }
+
+        function initializeDefaultDates() {
+            const today = new Date();
+            const end = addDays(today, 6);
+            fromInput.value = formatDateInput(today);
+            toInput.value = formatDateInput(end);
+        }
+
+        async function loadFaculties() {
+            setStatus('Загружаем список факультетов…');
+            try {
+                const faculties = await fetchJson(API.faculties);
+                resetSelect(facultySelect, 'Выберите факультет', false);
+                faculties.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    facultySelect.appendChild(option);
+                });
+                setStatus('Факультеты загружены.');
+            } catch (error) {
+                setStatus(`Не удалось получить факультеты: ${error.message}`, true);
+            }
+        }
+
+        async function loadCourses(faculty) {
+            resetSelect(courseSelect, faculty ? 'Загружаем…' : 'Сначала выберите факультет', true);
+            resetSelect(groupSelect, 'Сначала выберите курс', true);
+            loadButton.disabled = true;
+            if (!faculty) {
+                return;
+            }
+            setStatus('Получаем курсы…');
+            try {
+                const courses = await fetchJson(API.courses(faculty));
+                resetSelect(courseSelect, 'Выберите курс', false);
+                courses.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    courseSelect.appendChild(option);
+                });
+                setStatus('Выберите курс.');
+            } catch (error) {
+                setStatus(`Не удалось получить курсы: ${error.message}`, true);
+            }
+        }
+
+        async function loadGroups(faculty, course) {
+            resetSelect(groupSelect, course ? 'Загружаем…' : 'Сначала выберите курс', true);
+            loadButton.disabled = true;
+            if (!course) {
+                return;
+            }
+            setStatus('Ищем группы…');
+            try {
+                const groups = await fetchJson(API.groups(faculty, course));
+                resetSelect(groupSelect, 'Выберите группу', false);
+                groups.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    groupSelect.appendChild(option);
+                });
+                setStatus('Группа готова к выбору.');
+            } catch (error) {
+                setStatus(`Не удалось получить группы: ${error.message}`, true);
+            }
+        }
+
+        async function loadSchedule() {
+            const faculty = facultySelect.value;
+            const course = courseSelect.value;
+            const group = groupSelect.value;
+            if (!faculty || !course || !group) {
+                setStatus('Пожалуйста, заполните все параметры.', true);
+                return;
+            }
+
+            const params = { faculty, course, group };
+            let fromValue = fromInput.value;
+            let toValue = toInput.value;
+            if (!fromValue) {
+                const today = new Date();
+                fromValue = formatDateInput(today);
+            }
+            if (!toValue) {
+                const base = parseInputDate(fromValue);
+                toValue = formatDateInput(addDays(base, 6));
+            }
+            params.from = fromValue;
+            params.to = toValue;
+            fromInput.value = fromValue;
+            toInput.value = toValue;
+
+            currentSelection = { faculty, course, group };
+            currentRange = { from: fromValue, to: toValue };
+
+            setStatus('Загружаем расписание…');
+            loadButton.disabled = true;
+            loadMoreButton.classList.add('hidden');
+            loadMoreButton.classList.remove('visible');
+            scheduleDays.classList.add('hidden');
+            scheduleDays.innerHTML = '';
+
+            try {
+                const data = await fetchJson(API.schedule(params));
+                const total = updateSchedule(data.lessons || [], { append: false });
+                if (total) {
+                    setStatus(`Найдено занятий: ${total}`);
+                    loadMoreButton.classList.remove('hidden');
+                } else {
+                    setStatus('Для выбранных параметров занятий не найдено.');
+                }
+            } catch (error) {
+                setStatus(`Не удалось получить расписание: ${error.message}`, true);
+            } finally {
+                loadButton.disabled = !groupSelect.value;
+            }
+        }
+
+        async function loadNextWeek() {
+            if (!currentSelection.group) {
+                return;
+            }
+            const baseDate = currentRange.to || currentRange.from;
+            const lastDate = baseDate ? parseInputDate(baseDate) : addDays(new Date(), 6);
+            const nextFrom = addDays(lastDate, 1);
+            const nextTo = addDays(nextFrom, 6);
+
+            const params = {
+                faculty: currentSelection.faculty,
+                course: currentSelection.course,
+                group: currentSelection.group,
+                from: formatDateInput(nextFrom),
+                to: formatDateInput(nextTo),
+            };
+
+            setStatus('Загружаем следующую неделю…');
+            loadMoreButton.disabled = true;
+            loadMoreButton.textContent = 'Загружаем…';
+
+            try {
+                const data = await fetchJson(API.schedule(params));
+                currentRange.to = params.to;
+                const total = updateSchedule(data.lessons || [], { append: true });
+                toInput.value = currentRange.to;
+                setStatus(`Найдено занятий: ${total}`);
+            } catch (error) {
+                setStatus(`Не удалось получить дополнительные данные: ${error.message}`, true);
+            } finally {
+                loadMoreButton.disabled = false;
+                loadMoreButton.textContent = 'Показать следующую неделю';
+            }
+        }
+
+        function updateSchedule(lessons, { append = false } = {}) {
+            if (!append) {
+                aggregatedLessons = Array.isArray(lessons) ? [...lessons] : [];
+            } else {
+                const seen = new Set(aggregatedLessons.map(item => item.id));
+                lessons.forEach(lesson => {
+                    if (lesson && lesson.id && !seen.has(lesson.id)) {
+                        aggregatedLessons.push(lesson);
+                        seen.add(lesson.id);
+                    }
+                });
+            }
+            aggregatedLessons.sort(compareLessons);
+            renderScheduleBlocks(aggregatedLessons);
+            loadMoreButton.classList.toggle('hidden', aggregatedLessons.length === 0);
+            return aggregatedLessons.length;
+        }
+
+        function renderScheduleBlocks(lessons) {
+            scheduleDays.innerHTML = '';
+            if (!lessons.length) {
+                scheduleDays.classList.add('hidden');
+                loadMoreButton.classList.remove('visible');
+                return;
+            }
+
+            const grouped = groupLessonsByDate(lessons);
+            grouped.forEach(([dateStr, dayLessons]) => {
+                const dayBlock = document.createElement('section');
+                dayBlock.className = 'day-block';
+
+                const header = document.createElement('header');
+                header.className = 'day-header';
+                const heading = document.createElement('h2');
+                heading.textContent = formatDateHuman(dateStr);
+                header.appendChild(heading);
+                dayBlock.appendChild(header);
+
+                const pairsContainer = document.createElement('div');
+                pairsContainer.className = 'pair-list';
+
+                const { pairMap, extras } = buildPairMap(dayLessons);
+
+                if (pairMap.size) {
+                    const existingPairs = Array.from(pairMap.keys()).sort((a, b) => a - b);
+                    const maxPair = Math.max(...existingPairs);
+                    for (let pair = 1; pair <= maxPair; pair += 1) {
+                        const pairLessons = pairMap.get(pair) || [];
+                        const card = document.createElement('article');
+                        card.className = 'pair-card';
+
+                        const headerEl = document.createElement('div');
+                        headerEl.className = 'pair-header';
+                        const numberSpan = document.createElement('span');
+                        numberSpan.className = 'pair-number';
+                        numberSpan.textContent = `${pair} пара`;
+                        headerEl.appendChild(numberSpan);
+                        const timeSpan = document.createElement('span');
+                        timeSpan.className = 'pair-time';
+                        timeSpan.textContent = pairLessons.length ? formatTimeRange(pairLessons[0].starts_at, pairLessons[0].ends_at) : '';
+                        headerEl.appendChild(timeSpan);
+                        card.appendChild(headerEl);
+
+                        if (!pairLessons.length) {
+                            card.classList.add('empty');
+                            const emptyDiv = document.createElement('div');
+                            emptyDiv.className = 'empty-text';
+                            emptyDiv.textContent = 'Нет занятия';
+                            card.appendChild(emptyDiv);
+                        } else {
+                            const lessonsWrapper = document.createElement('div');
+                            lessonsWrapper.className = 'pair-lessons';
+                            pairLessons.forEach(lesson => {
+                                lessonsWrapper.appendChild(createLessonElement(lesson));
+                            });
+                            card.appendChild(lessonsWrapper);
+                        }
+
+                        pairsContainer.appendChild(card);
+                    }
+                }
+
+                if (extras.length) {
+                    const card = document.createElement('article');
+                    card.className = 'pair-card';
+
+                    const headerEl = document.createElement('div');
+                    headerEl.className = 'pair-header';
+                    const numberSpan = document.createElement('span');
+                    numberSpan.className = 'pair-number';
+                    numberSpan.textContent = 'Без номера пары';
+                    headerEl.appendChild(numberSpan);
+                    card.appendChild(headerEl);
+
+                    const lessonsWrapper = document.createElement('div');
+                    lessonsWrapper.className = 'pair-lessons';
+                    extras.forEach(lesson => {
+                        lessonsWrapper.appendChild(createLessonElement(lesson));
+                    });
+                    card.appendChild(lessonsWrapper);
+
+                    pairsContainer.appendChild(card);
+                }
+
+                dayBlock.appendChild(pairsContainer);
+                scheduleDays.appendChild(dayBlock);
+            });
+
+            scheduleDays.classList.remove('hidden');
+        }
+
+        function createLessonElement(lesson) {
+            const container = document.createElement('div');
+            container.className = 'lesson-detail';
+
+            const subject = document.createElement('div');
+            subject.className = 'lesson-subject';
+            subject.textContent = lesson.subject || 'Без предмета';
+            container.appendChild(subject);
+
+            const meta = document.createElement('div');
+            meta.className = 'lesson-meta';
+            const metaItems = [];
+            if (lesson.type) {
+                const typeBadge = document.createElement('span');
+                typeBadge.className = 'badge';
+                typeBadge.textContent = lesson.type;
+                metaItems.push(typeBadge);
+            }
+            if (lesson.teacher) {
+                const teacher = document.createElement('span');
+                teacher.textContent = lesson.teacher;
+                metaItems.push(teacher);
+            }
+            if (lesson.room) {
+                const room = document.createElement('span');
+                room.textContent = lesson.room;
+                metaItems.push(room);
+            }
+            metaItems.forEach(node => meta.appendChild(node));
+            if (metaItems.length) {
+                container.appendChild(meta);
+            }
+
+            if (lesson.notes) {
+                const notes = document.createElement('div');
+                notes.className = 'lesson-notes';
+                notes.textContent = lesson.notes;
+                container.appendChild(notes);
+            }
+
+            return container;
+        }
+
+        function groupLessonsByDate(lessons) {
+            const byDate = new Map();
+            lessons.forEach(lesson => {
+                if (!lesson.date) {
+                    return;
+                }
+                if (!byDate.has(lesson.date)) {
+                    byDate.set(lesson.date, []);
+                }
+                byDate.get(lesson.date).push(lesson);
+            });
+            return Array.from(byDate.entries()).sort((a, b) => parseRussianDate(a[0]) - parseRussianDate(b[0]));
+        }
+
+        function buildPairMap(dayLessons) {
+            const pairMap = new Map();
+            const extras = [];
+            dayLessons.forEach(lesson => {
+                const pairNo = Number.parseInt(lesson.pair_number, 10);
+                if (Number.isFinite(pairNo) && pairNo > 0) {
+                    if (!pairMap.has(pairNo)) {
+                        pairMap.set(pairNo, []);
+                    }
+                    pairMap.get(pairNo).push(lesson);
+                } else {
+                    extras.push(lesson);
+                }
+            });
+            pairMap.forEach(list => list.sort((a, b) => (a.starts_at || '').localeCompare(b.starts_at || '')));
+            extras.sort((a, b) => (a.starts_at || '').localeCompare(b.starts_at || ''));
+            return { pairMap, extras };
+        }
+
+        function compareLessons(a, b) {
+            const dateDiff = parseRussianDate(a.date).getTime() - parseRussianDate(b.date).getTime();
+            if (dateDiff !== 0) {
+                return dateDiff;
+            }
+            const pairA = Number.isFinite(Number(a.pair_number)) ? Number(a.pair_number) : 999;
+            const pairB = Number.isFinite(Number(b.pair_number)) ? Number(b.pair_number) : 999;
+            if (pairA !== pairB) {
+                return pairA - pairB;
+            }
+            return (a.starts_at || '').localeCompare(b.starts_at || '');
+        }
+
+        function formatDateHuman(value) {
+            const date = parseRussianDate(value);
+            const day = date.getDate();
+            const month = MONTHS[date.getMonth()];
+            const year = date.getFullYear();
+            const weekday = WEEKDAYS[date.getDay()];
+            const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            return `${day} ${month} ${year}, ${capitalizedWeekday}`;
+        }
+
+        function formatTimeRange(start, end) {
+            if (!start && !end) return '';
+            if (!start || !end) return start || end;
+            return `${start} — ${end}`;
+        }
+
+        function parseRussianDate(value) {
+            if (!value || typeof value !== 'string') {
+                return new Date(0);
+            }
+            const [day, month, year] = value.split('.').map(Number);
+            return new Date(year, (month || 1) - 1, day || 1);
+        }
+
+        function formatDateInput(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function parseInputDate(value) {
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(year, (month || 1) - 1, day || 1);
+        }
+
+
+        function addDays(date, amount) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + amount);
+            return result;
+        }
+    </script>
+</body>
+</html>

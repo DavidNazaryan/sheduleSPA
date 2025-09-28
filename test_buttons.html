@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест кнопок домашнего задания</title>
+    <style>
+        .pair-card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: #f9f9f9;
+        }
+        
+        .add-homework-btn {
+            display: none;
+            margin-top: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: #1d4ed8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .add-homework-btn:hover {
+            background: #1e3a8a;
+            transform: translateY(-1px);
+        }
+        
+        .homework-display {
+            margin-top: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, rgba(29, 78, 216, 0.08), rgba(59, 130, 246, 0.05));
+            border: 1px solid rgba(29, 78, 216, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #333;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест кнопок домашнего задания</h1>
+    
+    <div id="test-controls">
+        <button onclick="showButtons()">Показать кнопки</button>
+        <button onclick="hideButtons()">Скрыть кнопки</button>
+        <button onclick="addTestCards()">Добавить тестовые карточки</button>
+    </div>
+    
+    <div id="test-cards"></div>
+    
+    <script>
+        function addTestCards() {
+            const container = document.getElementById('test-cards');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 3; i++) {
+                const card = document.createElement('div');
+                card.className = 'pair-card';
+                card.innerHTML = `
+                    <h3>${i} пара</h3>
+                    <p>Математика - Лекция</p>
+                    <p>Аудитория: 101</p>
+                    <button class="add-homework-btn" data-lesson-id="lesson_${i}">
+                        Добавить домашнее задание
+                    </button>
+                `;
+                container.appendChild(card);
+            }
+        }
+        
+        function showButtons() {
+            const buttons = document.querySelectorAll('.add-homework-btn');
+            console.log('Найдено кнопок:', buttons.length);
+            buttons.forEach((btn, index) => {
+                btn.style.display = 'block';
+                console.log(`Кнопка ${index} показана`);
+            });
+        }
+        
+        function hideButtons() {
+            const buttons = document.querySelectorAll('.add-homework-btn');
+            buttons.forEach(btn => {
+                btn.style.display = 'none';
+            });
+        }
+        
+        // Автоматически добавляем тестовые карточки при загрузке
+        window.addEventListener('load', addTestCards);
+    </script>
+</body>
+</html>
+
