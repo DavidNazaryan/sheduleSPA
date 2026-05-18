@@ -1,56 +1,46 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+```
+# Android build outputs
+app/build/
+.gradle/
+*/build/
 
-# Virtual environments
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
-
-# IDE
-.vscode/
+# IDE files
 .idea/
-*.swp
-*.swo
-*~
+*.iml
+*.iws
+.vscode/
 
-# OS
+# System files
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
 
+# Environment variables
+.env
+.env.local
+*.env.*
+
+# Python related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
 # Temporary files
 *.tmp
 *.temp
-
-# Cache files
-data/cache.json
-data/users.tmp
-
-# SSH keys and sensitive data
-*.pem
-*.key
-id_rsa*
+*~
+```
