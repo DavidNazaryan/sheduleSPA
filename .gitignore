@@ -1,25 +1,65 @@
-*.class
-*.dex
-*.so
-*.aar
+```
+# Build artifacts
+build/
 *.apk
+*.aar
 *.jar
-*.war
-*.ear
+*.class
+
+# Dependencies
+.gradle/
+node_modules/
+venv/
+.venv/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
 *.iml
 *.iws
 *.ipr
-.gradle/
-build/
-app/build/
-.idea/
-*.log
-*~
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+.eggs/
+
+# Java/Android
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+
+# Gradle
+.gradle/
+build/
+
+# Local configuration file (sdk path, etc)
 local.properties
-captures/
-.externalNativeBuild
-.cxx/
-.ijwb/
-!/android-app/app/src/main/java/com/msu/schedule/data/remote/ScheduleParser.kt
+```
