@@ -136,7 +136,7 @@ class ScheduleParser @Inject constructor() {
                     lessons.add(
                         Lesson(
                             day = dayName,
-                            date = dateStr,
+                            date = dateStr ?: "",
                             time = time ?: "",
                             subject = subject,
                             type = type ?: "",

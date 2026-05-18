@@ -1,46 +1,25 @@
-```
-# Android build outputs
-app/build/
-.gradle/
-*/build/
-
-# IDE files
-.idea/
+*.class
+*.dex
+*.so
+*.aar
+*.apk
+*.jar
+*.war
+*.ear
 *.iml
 *.iws
-.vscode/
-
-# System files
+*.ipr
+.gradle/
+build/
+app/build/
+.idea/
+*.log
+*~
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
-
-# Environment variables
-.env
-.env.local
-*.env.*
-
-# Python related
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Coverage
-.coverage
-coverage/
-htmlcov/
-
-# Temporary files
-*.tmp
-*.temp
-*~
-```
+local.properties
+captures/
+.externalNativeBuild
+.cxx/
+.ijwb/
+!/android-app/app/src/main/java/com/msu/schedule/data/remote/ScheduleParser.kt
