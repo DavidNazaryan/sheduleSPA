@@ -1,65 +1,55 @@
 ```
 # Build artifacts
-build/
 *.apk
 *.aar
+*.dex
+*.so
 *.jar
 *.class
 
-# Dependencies
+# Gradle
 .gradle/
-node_modules/
-venv/
-.venv/
+build/
+!android-app/app/build.gradle.kts
 
-# Logs and temp files
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Log Files
 *.log
-*.tmp
-*.swp
 
 # Environment
 .env
 .env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-*.iml
-*.iws
-*.ipr
-
-# OS
-.DS_Store
-Thumbs.db
+.env.*
 
 # Coverage
 coverage/
 htmlcov/
 .coverage
 
-# Python
+# Dependencies
+node_modules/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg-info/
-.eggs/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+target/
+.julia/
+zig-cache/
+zig-out/
 
-# Java/Android
-*.class
-*.jar
-*.war
-*.ear
-hs_err_pid*
-replay_pid*
-
-# Gradle
-.gradle/
-build/
-
-# Local configuration file (sdk path, etc)
-local.properties
+# System
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.swo
 ```
